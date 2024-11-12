@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pemesanan Kendaraan</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        .booking-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .booking-form, .driver-list, .driver-registration {
+            flex: 1;
+            min-width: 300px;
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .booking-form:hover, .driver-list:hover, .driver-registration:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .driver-item {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .driver-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .chat-button {
+            background-color: #25D366;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .chat-button:hover {
+            background-color: #128C7E;
+        }
+
+        @media (max-width: 768px) {
+            .booking-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="booking-container">
+            <div class="booking-form">
+                <h2>Pesan Kendaraan</h2>
+                <form id="bookingForm">
+                    <input type="text" id="passengerName" placeholder="Nama Penumpang" required>
+                    <input type="text" id="pickupLocation" placeholder="Lokasi Penjemputan" required>
+                    <input type="text" id="destination" placeholder="Tujuan" required>
+                    <select id="vehicleType">
+                        <option value="">Pilih Jenis Kendaraan</option>
+                        <option value="motor">Motor</option>
+                        <option value="mobil">Mobil</option>
+                    </select>
+                    <button type="submit">Pesan Sekarang</button>
+                </form>
+            </div>
+            <div class="driver-list">
+                <h2>Daftar Driver Tersedia</h2>
+                <div id="driverList"></div>
+            </div>
+            <div class="driver-registration">
+                <h2>Pendaftaran Driver</h2>
+                <form id="driverForm">
+                    <input type="text" id="driverName" placeholder="Nama-Asal (Ahmat-Sagea)" required>
+                    <input type="tel" id="whatsappNumber" placeholder="Nomor WhatsApp : (+62882311223344)" required>
+                    <select id="Jenis Kendaraan">
+                        <option value="">Pilih Jenis Kendaraan</option>
+                        <option value="motor">Motor</option>
+                        <option value="mobil">Mobil</option>
+                    </select>
+                    <button type="submit">Daftar sebagai Driver</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load drivers from localStorage or use an empty array if none exist
+        let drivers = JSON.parse(localStorage.getItem('drivers')) || [];
+
+        function saveDrivers() {
+            localStorage.setItem('drivers', JSON.stringify(drivers));
+        }
+
+        function displayDrivers(vehicleType = '') {
+            const driverList = document.getElementById('driverList');
+            driverList.innerHTML = '';
+
+            drivers.filter(driver => !vehicleType || driver.vehicle === vehicleType).forEach((driver, index) => {
+                const driverItem = document.createElement('div');
+                driverItem.classList.add('driver-item');
+                driverItem.innerHTML = `
+                    <p><strong>Nama:</strong> ${driver.name}</p>
+                    <p><strong>Kendaraan:</strong> ${driver.vehicle}</p>
+                    <button class="chat-button" onclick="chatWithDriver('${driver.whatsApp}')">Chat via WhatsApp</button>
+                `;
+                driverList.appendChild(driverItem);
+            });
+        }
+
+        function chatWithDriver(whatsAppNumber) {
+            window.open(`https://wa.me/${whatsAppNumber}`, '_blank');
+        }
+
+        document.getElementById('driverForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('driverName').value;
+            const whatsApp = document.getElementById('whatsappNumber').value;
+            const vehicle = document.getElementById('driverVehicle').value;
+
+            drivers.push({ name, whatsApp, vehicle });
+            saveDrivers();
+            displayDrivers();
+            this.reset();
+        });
+
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const vehicleType = document.getElementById('vehicleType').value;
+            displayDrivers(vehicleType);
+            alert('Pemesanan berhasil! Silakan pilih driver dari daftar.');
+            this.reset();
+        });
+
+        document.getElementById('vehicleType').addEventListener('change', function(e) {
+            displayDrivers(e.target.value);
+        });
+
+        // Display all drivers on page load
+        displayDrivers();
+    </script>
+</body>
+</html>
